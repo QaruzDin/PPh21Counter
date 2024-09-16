@@ -1,7 +1,22 @@
 Attribute VB_Name = "PPhTERFunc"
 Option Explicit
 
-Function cariTER(lookup_value As String) As Variant
+Public Sub calcPPh21TER()
+    Dim ws As Worksheet
+    Dim rng As Range
+    
+    Set ws = ThisWorkbook.ActiveSheet
+    Set rng = ws.Range("D1")
+    
+    With rng
+        .Offset(0, 1) = "TER"
+        .Offset(0, 2) = "Tarif"
+        .Offset(0, 3) = "PPh 21"
+        .Offset(0, 1).Resize(1, 3).HorizontalAlignment = xlCenter
+    End With
+End Sub
+
+Function cariTER(PTKP As String) As Variant
     Dim lookup_table As Variant
     Dim i As Integer
 
@@ -19,7 +34,7 @@ Function cariTER(lookup_value As String) As Variant
 
     ' Loop through the lookup table to find the matching value
     For i = LBound(lookup_table) To UBound(lookup_table)
-        If lookup_table(i)(0) = lookup_value Then
+        If lookup_table(i)(0) = PTKP Then
             ' Return the categories according the first column (PTKP)
              cariTER = lookup_table(i)(1)
              Exit Function
@@ -60,3 +75,36 @@ Public Sub Import_DataTER()
     
     MsgBox "Sheet berhasil disalin ke workbook ini :)", vbInformation
 End Sub
+
+
+Public Function tarifTER(TER As String, gajiBruto As Double) As Double
+    Dim kolomTER As Range
+    Dim batasBawah As Range
+    Dim lo As ListObject
+    
+    Dim ws As Worksheet
+    Set ws = ThisWorkbook.Sheets("DATA TER") ' pastikan nama sheet telah sesuai
+    
+    ' case conditional untuk penentuan kategori TER
+    Select Case TER
+        Case "A"
+            Set lo = ws.ListObjects("tabelA") ' Ganti dengan nama tabel yang sesuai
+            Set batasBawah = lo.ListColumns("Batas Bawah").DataBodyRange
+            Set kolomTER = lo.ListColumns("TER").DataBodyRange
+        Case "B"
+            Set lo = ws.ListObjects("tabelB")
+            Set batasBawah = lo.ListColumns("Batas Bawah").DataBodyRange
+            Set kolomTER = lo.ListColumns("TER").DataBodyRange
+        Case "C"
+            Set lo = ws.ListObjects("tabelC")
+            Set batasBawah = lo.ListColumns("Batas Bawah").DataBodyRange
+            Set kolomTER = lo.ListColumns("TER").DataBodyRange
+        Case Else
+            MsgBox "Invalid data TER", vbExclamation
+            Exit Function
+    End Select
+            
+    ' pencarian tarif TER
+    tarifTER = Application.WorksheetFunction.Index(kolomTER, Application.WorksheetFunction.Match(gajiBruto, batasBawah, 1))
+    
+End Function
