@@ -1,7 +1,7 @@
 Attribute VB_Name = "PPhTERFunc"
 Option Explicit
 
-Public Sub calcPPh21TER()
+Public Sub formatting_PPh21TER()
     Dim ws As Worksheet
     Dim rng As Range
     
@@ -108,3 +108,23 @@ Public Function tarifTER(TER As String, gajiBruto As Double) As Double
     tarifTER = Application.WorksheetFunction.Index(kolomTER, Application.WorksheetFunction.Match(gajiBruto, batasBawah, 1))
     
 End Function
+
+Public Function PPH21(trf As Double, gajiBrt As Double) As Double
+    ' Validasi input untuk menghindari kesalahan
+    If trf < 0 Or trf > 1 Then
+        MsgBox "Tarif harus antara 0,00 s/d 1,00.", vbExclamation
+        Exit Function
+    End If
+    
+    If gajiBrt < 0 Then
+        MsgBox "Gaji bruto tidak boleh negatif.", vbExclamation
+        Exit Function
+    End If
+
+    ' Perhitungan PPh 21
+    PPH21 = Application.WorksheetFunction.RoundDown(trf * gajiBrt, 0)
+End Function
+
+
+
+
