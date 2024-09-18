@@ -14,6 +14,11 @@ Public Sub formatting_PPh21TER()
         .Offset(0, 3) = "PPh 21"
         .Offset(0, 1).Resize(1, 3).HorizontalAlignment = xlCenter
     End With
+    
+    Import_DataTER
+    
+    iterratingCell
+    
 End Sub
 
 Function cariTER(PTKP As String) As Variant
@@ -68,22 +73,40 @@ Public Sub Import_DataTER()
     For Each wsSc In wbSc.Sheets
         wsSc.Copy after:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
         Set wsTg = ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
+        
+        ' penanganan error bila DATA TER telah ter
+        On Error Resume Next
         wsTg.Name = wsSc.Name
+        If Err.Number <> 0 Then
+            MsgBox "Data TER terdeksi telah tersedia!"
+            Err.Clear
+        End If
+        On Error GoTo 0
     Next wsSc
     
     wbSc.Close False
     
+    ThisWorkbook.Sheets(ActiveSheet.Index - 1).Activate
     MsgBox "Sheet berhasil disalin ke workbook ini :)", vbInformation
+
 End Sub
 
 
-Public Function tarifTER(TER As String, gajiBruto As Double) As Double
+Function tarifTER(TER As String, gajiBruto As Double) As Double
     Dim kolomTER As Range
     Dim batasBawah As Range
     Dim lo As ListObject
     
     Dim ws As Worksheet
+    On Error Resume Next
     Set ws = ThisWorkbook.Sheets("DATA TER") ' pastikan nama sheet telah sesuai
+    On Error GoTo 0
+    
+    ' memeriksa ketersediaan DATA TER
+    If ws Is Nothing Then
+        MsgBox "Sheet 'DATA TER' tidak ditemukan. Mohon periksa kembali apakah sheet sudah ter-upload."
+        Exit Function
+    End If
     
     ' case conditional untuk penentuan kategori TER
     Select Case TER
@@ -109,22 +132,62 @@ Public Function tarifTER(TER As String, gajiBruto As Double) As Double
     
 End Function
 
-Public Function PPH21(trf As Double, gajiBrt As Double) As Double
-    ' Validasi input untuk menghindari kesalahan
-    If trf < 0 Or trf > 1 Then
-        MsgBox "Tarif harus antara 0,00 s/d 1,00.", vbExclamation
-        Exit Function
-    End If
-    
-    If gajiBrt < 0 Then
-        MsgBox "Gaji bruto tidak boleh negatif.", vbExclamation
-        Exit Function
-    End If
 
-    ' Perhitungan PPh 21
-    PPH21 = Application.WorksheetFunction.RoundDown(trf * gajiBrt, 0)
+Function PPH21TER(trf As Double, gajiBrt As Double) As Double
+  
+  PPH21TER = WorksheetFunction.RoundDown(trf * gajiBrt, 0)
 End Function
 
 
+Public Sub iterratingCell()
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim cell As Range
+    Dim i As Long
+    Dim j As Long
+    Dim lastRow As Long
+    Dim startTime As Single
+    Dim timeout As Single
+    
+    Set ws = ThisWorkbook.ActiveSheet
+    Set rng = ws.Range("E1")
+    
+    ' mendeteksi kolom aktif terakhir
+    lastRow = ws.Cells(ws.Rows.Count, "D").End(xlUp).row - 1
+    
+    ' timeout setting for infinte loop prevention (timeout is in second)
+    startTime = Timer
+    timeout = 60
+    
+    'iterrating one cell at the time
+    For i = 1 To lastRow
+        For j = 1 To 3
+            Set cell = rng.Offset(i, j - 1) ' will be moving one cell above
+        
+            cell.Select
+            Select Case j
+                Case 1
+                    cell.Value = cariTER(cell.Offset(0, -2))
+                    cell.HorizontalAlignment = xlCenter ' formatting : centered
+                Case 2
+                    cell.Value = tarifTER(cell.Offset(0, -1), cell.Offset(0, -2))
+                    cell.NumberFormat = "0.00%" ' formatting : percentage
+                Case 3
+                    cell.Value = PPH21TER(cell.Offset(0, -1), cell.Offset(0, -3))
+                    cell.NumberFormat = "_(* #,##0_);_(* (#,##0);_(* ""-""_);_(@_)" ' formatting : IDR
+            End Select
+            
+        Next j
+        
+            
+        ' Here! You can add more conditions as needed in this block of FOR loop
 
-
+        ' Check if the timeout duration has been exceeded
+        If Timer - startTime > timeout Then
+            MsgBox "Time limit is reached out"
+            Exit Sub
+        End If
+    Next i
+    
+    MsgBox "Module berhasil dijalankan! Huray!"
+End Sub
