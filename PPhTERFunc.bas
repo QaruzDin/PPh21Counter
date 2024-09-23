@@ -1,13 +1,18 @@
 Attribute VB_Name = "PPhTERFunc"
 Option Explicit
 
+Dim colGaji As String
+
+
 Public Sub formatting_PPh21TER()
     Dim ws As Worksheet
     Dim rng As Range
+
+    colGaji = inputColGaji()
     
     Set ws = ThisWorkbook.ActiveSheet
-    Set rng = ws.Range("D1")
-    
+    Set rng = ws.Range(colGaji & "1")
+
     With rng
         .Offset(0, 1) = "TER"
         .Offset(0, 2) = "Tarif"
@@ -78,7 +83,10 @@ Public Sub Import_DataTER()
         On Error Resume Next
         wsTg.Name = wsSc.Name
         If Err.Number <> 0 Then
-            MsgBox "Data TER terdeksi telah tersedia!"
+            MsgBox "Data TER terdeksi telah tersedia! Data yang akan diunggah akan dihapus secara otomatis.", vbExclamation
+            Application.DisplayAlerts = False
+            wsTg.Delete
+            Application.DisplayAlerts = True
             Err.Clear
         End If
         On Error GoTo 0
@@ -150,10 +158,10 @@ Public Sub iterratingCell()
     Dim timeout As Single
     
     Set ws = ThisWorkbook.ActiveSheet
-    Set rng = ws.Range("E1")
+    Set rng = ws.Range(colGaji & "1").Offset(0, 1)
     
     ' mendeteksi kolom aktif terakhir
-    lastRow = ws.Cells(ws.Rows.Count, "D").End(xlUp).row - 1
+    lastRow = ws.Cells(ws.Rows.Count, colGaji).End(xlUp).row - 1
     
     ' timeout setting for infinte loop prevention (timeout is in second)
     startTime = Timer
@@ -191,3 +199,36 @@ Public Sub iterratingCell()
     
     MsgBox "Module berhasil dijalankan! Huray!"
 End Sub
+
+Public Function inputColGaji() As String
+    Dim colnumbTER As Integer
+    Dim abortMsg As VbMsgBoxResult
+    
+    Do
+        inputColGaji = InputBox("Mohon input letak kolom gaji bruto anda :" & vbCrLf & _
+                    "(Pastikan Kolom PTKP berada disisi kiri kolom.", "Input Kolom Gaji")
+        If inputColGaji = vbNullString Then
+            abortMsg = MsgBox("Apakah anda yakin ingin mengakhiri modul?", vbExclamation + vbYesNo)
+            If abortMsg = vbYes Then
+                inputColGaji
+                Exit Function
+            End If
+        End If
+        
+        If Not IsNumeric(inputColGaji) Then
+            On Error Resume Next
+            colnumbTER = Columns(inputColGaji).Column
+            On Error GoTo 0
+            
+            If colnumbTER > 1 Then
+                inputColGaji = Split(Cells(1, colnumbTER).Address(False, False), "1")(0)
+                Exit Do
+            Else
+                MsgBox "Input Kolom yang diberikan harus berada tepat di sebelah sisi kanan kolom PTKP.", vbExclamation
+            End If
+        Else
+            MsgBox "Kolom yang anda masukkan berupa huruf(contoh : 'C' [tanpa tanda petik])", vbExclamation
+        End If
+    Loop
+    
+End Function
