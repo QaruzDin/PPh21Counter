@@ -10,6 +10,9 @@ Public Sub formatting_PPh21TER()
 
     colGaji = inputColGaji()
     
+    ' Penanganan pembatalan module oleh user
+    If colGaji = "" Then MsgBox "Tidak ada kolom gaji yang dimasukkan. Module dibatalkan.", vbExclamation: Exit Sub
+    
     Set ws = ThisWorkbook.ActiveSheet
     Set rng = ws.Range(colGaji & "1")
 
@@ -17,12 +20,16 @@ Public Sub formatting_PPh21TER()
         .Offset(0, 1) = "TER"
         .Offset(0, 2) = "Tarif"
         .Offset(0, 3) = "PPh 21"
+        .Offset(0, -1).Copy
+        .Offset(0, 1).Resize(1, 3).PasteSpecial Paste:=xlPasteFormats
         .Offset(0, 1).Resize(1, 3).HorizontalAlignment = xlCenter
     End With
     
     Import_DataTER
     
     iterratingCell
+    
+    sumPPH21
     
 End Sub
 
@@ -197,7 +204,7 @@ Public Sub iterratingCell()
         End If
     Next i
     
-    MsgBox "Module berhasil dijalankan! Huray!"
+    MsgBox "Module perhitungan berhasil dijalankan! Huray!"
 End Sub
 
 Public Function inputColGaji() As String
@@ -210,7 +217,6 @@ Public Function inputColGaji() As String
         If inputColGaji = vbNullString Then
             abortMsg = MsgBox("Apakah anda yakin ingin mengakhiri modul?", vbExclamation + vbYesNo)
             If abortMsg = vbYes Then
-                inputColGaji
                 Exit Function
             End If
         End If
@@ -232,3 +238,29 @@ Public Function inputColGaji() As String
     Loop
     
 End Function
+
+Public Sub sumPPH21()
+    Dim sumcells As Range
+    Dim lastResult As String
+    
+    Set sumcells = Range("A1").End(xlToRight).End(xlDown).Offset(1, 0)
+    sumcells.Select
+    
+    With sumcells
+        ' Menjumlahkan seluruh nilai pada kolom TER
+        .Formula = "=SUM(" & Range(sumcells.Offset(-1, 0).End(xlUp).Offset(1, 0), sumcells.Offset(-1, 0)).Address & ")"
+        ' Formatting
+        .Offset(-1, 0).Copy
+        .PasteSpecial Paste:=xlPasteFormats
+        .Offset(0, -1).Value = "Total"
+    End With
+    
+    ' Menyiapkan hasil sesuai format
+    lastResult = Format(sumcells, "#,##0")
+    
+    ' autofit kolom total
+    Columns(sumcells.Column).AutoFit
+    
+    ' Menampilkan perolehan PPh 21 TER
+    MsgBox "Total PPh 21 TER yang harus dibayar adalah Rp " & lastResult, vbOKOnly
+End Sub
