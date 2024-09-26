@@ -2,11 +2,30 @@ Attribute VB_Name = "PPhTERFunc"
 Option Explicit
 
 Dim colGaji As String
+Dim fileDial As Boolean
 
 
 Public Sub formatting_PPh21TER()
     Dim ws As Worksheet
     Dim rng As Range
+    Dim confirm As VbMsgBoxResult
+    
+    confirm = MsgBox("Apakah anda ingin menjalankan modul?" & vbCrLf & _
+                    "Pastikan kolom PTKP berada tepat di sisi kiri kolom penerimaan bruto!", vbYesNo)
+    If confirm = vbNo Then Exit Sub
+    
+    Import_DataTER
+    
+    ' penanganan pembatalan import oleh user
+    If Not fileDial Then
+        confirm = MsgBox("Apakah anda ingin membatalkan modul?", vbYesNo)
+        If confirm = vbYes Then
+            Exit Sub
+        Else
+            formatting_PPh21TER
+            Exit Sub
+        End If
+    End If
 
     colGaji = inputColGaji()
     
@@ -25,8 +44,6 @@ Public Sub formatting_PPh21TER()
         .Offset(0, 1).Resize(1, 3).HorizontalAlignment = xlCenter
     End With
     
-    Import_DataTER
-    
     iterratingCell
     
     sumPPH21
@@ -37,7 +54,7 @@ Function cariTER(PTKP As String) As Variant
     Dim lookup_table As Variant
     Dim i As Integer
 
-    ' Define the TER's categories
+    ' Tabel Kategori TER
     lookup_table = Array( _
         Array("TK/0", "A"), _
         Array("TK/1", "A"), _
@@ -49,16 +66,16 @@ Function cariTER(PTKP As String) As Variant
         Array("K/3", "C") _
     )
 
-    ' Loop through the lookup table to find the matching value
+    ' Ulangi tabel pencarian untuk menemukan nilai yang cocok
     For i = LBound(lookup_table) To UBound(lookup_table)
         If lookup_table(i)(0) = PTKP Then
-            ' Return the categories according the first column (PTKP)
+            ' Memperoleh nilai kategori TER sesuai kolom pertama (PTKP)
              cariTER = lookup_table(i)(1)
              Exit Function
         End If
     Next i
 
-    ' If no match is found, return "Invalid"
+    ' Jika tidak ditemukan kecocokan, mengembalikan nilai "Invalid"
     cariTER = "Invalid"
 End Function
 
@@ -75,26 +92,29 @@ Public Sub Import_DataTER()
         .Title = "Pilih file DATA TER"
         .Filters.Add "Excel Files", "*.xls; *.xlsx; *.xlsm", 1
         .AllowMultiSelect = False
-        If .Show <> -1 Then Exit Sub ' pembatalan oleh user
+        fileDial = .Show
+        If Not fileDial Then Exit Sub ' pembatalan oleh user
         selectedFile = .SelectedItems(1)
     End With
     
-    ' Mencopy isi file
     Set wbSc = Workbooks.Open(selectedFile)
     
     For Each wsSc In wbSc.Sheets
         wsSc.Copy after:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
         Set wsTg = ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
         
-        ' penanganan error bila DATA TER telah ter
+        ' Penanganan error bila DATA TER telah tersedia
         On Error Resume Next
         wsTg.Name = wsSc.Name
         If Err.Number <> 0 Then
-            MsgBox "Data TER terdeksi telah tersedia! Data yang akan diunggah akan dihapus secara otomatis.", vbExclamation
+            MsgBox "Data TER yang lama akan ditimpa dengan berkas terbaru!", vbExclamation, "Duplikasi Data TER Terdeksi"
             Application.DisplayAlerts = False
-            wsTg.Delete
+            wsTg.Delete ' Hapus worksheet yang baru dicopy
+            ThisWorkbook.Sheets(wsSc.Name).Delete ' Hapus worksheet lama dengan nama yang sama
             Application.DisplayAlerts = True
             Err.Clear
+            wsSc.Copy after:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count) ' Copy lagi setelah dihapus
+            ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count).Name = wsSc.Name
         End If
         On Error GoTo 0
     Next wsSc
@@ -213,7 +233,7 @@ Public Function inputColGaji() As String
     
     Do
         inputColGaji = InputBox("Mohon input letak kolom gaji bruto anda :" & vbCrLf & _
-                    "(Pastikan Kolom PTKP berada disisi kiri kolom.", "Input Kolom Gaji")
+                    "(Pastikan Kolom PTKP tepat berada disisi kiri kolom gaji bruto.", "Input Kolom Gaji")
         If inputColGaji = vbNullString Then
             abortMsg = MsgBox("Apakah anda yakin ingin mengakhiri modul?", vbExclamation + vbYesNo)
             If abortMsg = vbYes Then
@@ -255,12 +275,15 @@ Public Sub sumPPH21()
         .Offset(0, -1).Value = "Total"
     End With
     
+    Application.CutCopyMode = False
+    
     ' Menyiapkan hasil sesuai format
     lastResult = Format(sumcells, "#,##0")
     
     ' autofit kolom total
     Columns(sumcells.Column).AutoFit
+    sumcells.Select
     
     ' Menampilkan perolehan PPh 21 TER
-    MsgBox "Total PPh 21 TER yang harus dibayar adalah Rp " & lastResult, vbOKOnly
+    MsgBox "Total PPh 21 TER yang harus dibayar adalah Rp " & lastResult, vbInformation
 End Sub
