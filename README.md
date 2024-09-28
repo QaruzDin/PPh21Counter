@@ -1,6 +1,6 @@
 # PPh 21 TER Counter Ver 1.0 (2024)
 
-![DemoGIF](https://github.com/user-attachments/assets/7df535be-6565-41d1-82d1-8125a39d8b7c)
+![demo](https://github.com/user-attachments/assets/12d10f78-eaa6-47a9-857b-a70349646b2c)
 ## Overview
 Modul VBA ini dirancang untuk memformat data **Pajak Penghasilan Karyawan Tetap maupun Tidak Tetap yang dibayar bulanan** sesuai dengan ketentuan **TER (Tarif Efektif Rerata) Bulanan** yang diatur dalam *Peraturan Menteri Keuangan (PMK) No. 168 Tahun 2023* tentang Tentang Petunjuk Pelaksanaan Pemotongan Pajak Atas Penghasilan Sehubungan dengan Pekerjaan, Jasa, Atau Kegiatan Orang Pribadi.
 ## Tujuan
