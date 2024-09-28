@@ -1,6 +1,6 @@
 # PPh 21 TER Counter Ver 1.0 (2024)
 
-![demo_GIF](https://github.com/user-attachments/assets/308af62b-3c1c-42f0-9428-6f16b77b83d9)
+![DemoGIF](https://github.com/user-attachments/assets/7df535be-6565-41d1-82d1-8125a39d8b7c)
 ## Overview
 Modul VBA ini dirancang untuk memformat data **Pajak Penghasilan Karyawan Tetap maupun Tidak Tetap yang dibayar bulanan** sesuai dengan ketentuan **TER (Tarif Efektif Rerata) Bulanan** yang diatur dalam *Peraturan Menteri Keuangan (PMK) No. 168 Tahun 2023* tentang Tentang Petunjuk Pelaksanaan Pemotongan Pajak Atas Penghasilan Sehubungan dengan Pekerjaan, Jasa, Atau Kegiatan Orang Pribadi.
 ## Tujuan
@@ -41,4 +41,4 @@ Contoh format Penulisan yang benar disisipkan garis miring :
 5. Ikuti alur petunjuk yang diberikan hingga modul memunculkan hasil akhir perhitungan PPh 21.
 ## Catatan
 ⚠️ *Pastikan kolom PTKP berada tepat di sisi kiri kolom penerimaan bruto untuk menghindari kesalahan pemrosesan.*  
-⚠️ *Apabila terjadi ketidaksesuaian antara hasil perhitungan modul dengan web DJP Online, periksa secara manual pada workbook atau worksheet `DATA TER` yang tersedia.*
+⚠️ *Apabila terjadi ketidaksesuaian antara hasil perhitungan modul dengan web DJP Online, periksa secara manual pada sheet `DATA TER` yang disediakan.*
