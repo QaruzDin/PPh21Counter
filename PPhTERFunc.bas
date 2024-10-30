@@ -146,7 +146,7 @@ Function tarifTER(TER As String, gajiBruto As Double) As Double
     ' case conditional untuk penentuan kategori TER
     Select Case TER
         Case "A"
-            Set lo = ws.ListObjects("tabelA") ' Ganti dengan nama tabel yang sesuai
+            Set lo = ws.ListObjects("tabelA")
             Set batasBawah = lo.ListColumns("Batas Bawah").DataBodyRange
             Set kolomTER = lo.ListColumns("TER").DataBodyRange
         Case "B"
@@ -202,7 +202,7 @@ Public Sub iterratingCell()
             cell.Select
             Select Case j
                 Case 1
-                    cell.Value = cariTER(cell.Offset(0, -2))
+                    cell.Formula = "=cariTER(" & cell.Offset(0, -2).Address(False, True) & ")"
                     cell.HorizontalAlignment = xlCenter ' formatting : centered
                 Case 2
                     cell.Value = tarifTER(cell.Offset(0, -1), cell.Offset(0, -2))
@@ -233,7 +233,7 @@ Public Function inputColGaji() As String
     
     Do
         inputColGaji = InputBox("Mohon input letak kolom gaji bruto anda :" & vbCrLf & _
-                    "(Pastikan Kolom PTKP tepat berada disisi kiri kolom gaji bruto.", "Input Kolom Gaji")
+                    "(Pastikan Kolom PTKP tepat berada disisi kiri kolom gaji bruto.)", "Input Kolom Gaji")
         If inputColGaji = vbNullString Then
             abortMsg = MsgBox("Apakah anda yakin ingin mengakhiri modul?", vbExclamation + vbYesNo)
             If abortMsg = vbYes Then
