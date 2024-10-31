@@ -194,6 +194,8 @@ Public Sub iterratingCell()
     startTime = Timer
     timeout = 60
     
+    
+    
     'iterrating one cell at the time
     For i = 1 To lastRow
         For j = 1 To 3
@@ -205,17 +207,16 @@ Public Sub iterratingCell()
                     cell.Formula = "=cariTER(" & cell.Offset(0, -2).Address(False, True) & ")"
                     cell.HorizontalAlignment = xlCenter ' formatting : centered
                 Case 2
-                    cell.Value = tarifTER(cell.Offset(0, -1), cell.Offset(0, -2))
+                    cell.Formula = "=tarifTER(" & cell.Offset(0, -1).Address(False, True) & ", " & _
+                                    cell.Offset(0, -2).Address(False, True) & ")"
                     cell.NumberFormat = "0.00%" ' formatting : percentage
                 Case 3
-                    cell.Value = PPH21TER(cell.Offset(0, -1), cell.Offset(0, -3))
+                    cell.Formula = "=PPH21TER(" & cell.Offset(0, -1).Address(False, True) & ", " & _
+                                    cell.Offset(0, -3).Address(False, True) & ")"
                     cell.NumberFormat = "_(* #,##0_);_(* (#,##0);_(* ""-""_);_(@_)" ' formatting : IDR
             End Select
             
         Next j
-        
-            
-        ' Here! You can add more conditions as needed in this block of FOR loop
 
         ' Check if the timeout duration has been exceeded
         If Timer - startTime > timeout Then
