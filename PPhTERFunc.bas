@@ -158,6 +158,7 @@ Function tarifTER(TER As String, gajiBruto As Double) As Double
             Set batasBawah = lo.ListColumns("Batas Bawah").DataBodyRange
             Set kolomTER = lo.ListColumns("TER").DataBodyRange
         Case Else
+                    MsgBox "Invalid data TER", vbExclamation
             Exit Function
     End Select
             
