@@ -158,7 +158,6 @@ Function tarifTER(TER As String, gajiBruto As Double) As Double
             Set batasBawah = lo.ListColumns("Batas Bawah").DataBodyRange
             Set kolomTER = lo.ListColumns("TER").DataBodyRange
         Case Else
-            MsgBox "Invalid data TER", vbExclamation
             Exit Function
     End Select
             
@@ -170,7 +169,7 @@ End Function
 
 Function PPH21TER(trf As Double, gajiBrt As Double) As Double
   
-  PPH21TER = WorksheetFunction.RoundDown(trf * gajiBrt, 0)
+  PPH21TER = WorksheetFunction.Round(trf * gajiBrt, 0)
 End Function
 
 
