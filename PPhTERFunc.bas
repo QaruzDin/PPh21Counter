@@ -10,6 +10,7 @@ Public Sub formatting_PPh21TER()
     Dim rng As Range
     Dim confirm As VbMsgBoxResult
     
+    ' Memastikan sheet aktif adalah sheet yang diinginkan
     confirm = MsgBox("Apakah anda ingin menjalankan modul?" & vbCrLf & _
                     "Pastikan kolom PTKP berada tepat di sisi kiri kolom penerimaan bruto!", vbYesNo)
     If confirm = vbNo Then Exit Sub
@@ -84,7 +85,11 @@ Public Sub Import_DataTER()
     Dim selectedFile As String
     Dim wbSc As Workbook ' Workbook Souce
     Dim wsSc As Worksheet '  Worksheet Source
+    Dim wbTg As Workbook ' Workbook Target
     Dim wsTg As Worksheet ' Worksheet Target
+    
+    ' Set Workbook penerima (Target)
+    Set wbTg = ThisWorkbook
     
     ' Dialog file untuk memilih file DATA TER
     Set fileDialog = Application.fileDialog(msoFileDialogFilePicker)
@@ -100,28 +105,25 @@ Public Sub Import_DataTER()
     Set wbSc = Workbooks.Open(selectedFile)
     
     For Each wsSc In wbSc.Sheets
-        wsSc.Copy after:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
-        Set wsTg = ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
+        wsSc.Copy after:=wbTg.Sheets(wbTg.Sheets.Count)
+        Set wsTg = wbTg.Sheets(wbTg.Sheets.Count)
         
-        ' Penanganan error bila DATA TER telah tersedia
-        On Error Resume Next
-        wsTg.Name = wsSc.Name
-        If Err.Number <> 0 Then
+        ' Penanganan bila DATA TER telah tersedia
+        If Not wsTg.Name = wsSc.Name Then
             MsgBox "Data TER yang lama akan ditimpa dengan berkas terbaru!", vbExclamation, "Duplikasi Data TER Terdeksi"
             Application.DisplayAlerts = False
             wsTg.Delete ' Hapus worksheet yang baru dicopy
-            ThisWorkbook.Sheets(wsSc.Name).Delete ' Hapus worksheet lama dengan nama yang sama
+            wbTg.Sheets(wsSc.Name).Delete ' Hapus worksheet lama dengan nama yang sama
             Application.DisplayAlerts = True
-            Err.Clear
-            wsSc.Copy after:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count) ' Copy lagi setelah dihapus
-            ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count).Name = wsSc.Name
+            wsSc.Copy after:=wbTg.Sheets(wbTg.Sheets.Count) ' Copy lagi setelah dihapus
+            wbTg.Sheets(wbTg.Sheets.Count).Name = wsSc.Name
         End If
-        On Error GoTo 0
+        
     Next wsSc
     
     wbSc.Close False
     
-    ThisWorkbook.Sheets(ActiveSheet.Index - 1).Activate
+    wbTg.Sheets(ActiveSheet.Index - 1).Activate
     MsgBox "Sheet berhasil disalin ke workbook ini :)", vbInformation
 
 End Sub
@@ -158,7 +160,6 @@ Function tarifTER(TER As String, gajiBruto As Double) As Double
             Set batasBawah = lo.ListColumns("Batas Bawah").DataBodyRange
             Set kolomTER = lo.ListColumns("TER").DataBodyRange
         Case Else
-                    MsgBox "Invalid data TER", vbExclamation
             Exit Function
     End Select
             
@@ -178,6 +179,7 @@ Public Sub iterratingCell()
     Dim ws As Worksheet
     Dim rng As Range
     Dim cell As Range
+    Dim lastcellVal As Variant
     Dim i As Long
     Dim j As Long
     Dim lastRow As Long
@@ -190,14 +192,18 @@ Public Sub iterratingCell()
     ' mendeteksi kolom aktif terakhir
     lastRow = ws.Cells(ws.Rows.Count, colGaji).End(xlUp).row - 1
     
-    ' timeout setting for infinte loop prevention (timeout is in second)
+    ' pengaturan batas waktu untuk pencegahan infinite loop (batas waktu dalam detik)
     startTime = Timer
     timeout = 60
     
-    
-    
     'iterrating one cell at the time
     For i = 1 To lastRow
+    
+    lastcellVal = ws.Cells(i + 1, 1).Value
+    ' mengabaikan kolom jumlah/total yang dibuat user
+    If lastcellVal = "Total" Or lastcellVal = "Jumlah" Then
+        Exit For
+    End If
         For j = 1 To 3
             Set cell = rng.Offset(i, j - 1) ' will be moving one cell above
         
@@ -218,7 +224,7 @@ Public Sub iterratingCell()
             
         Next j
 
-        ' Check if the timeout duration has been exceeded
+        ' Periksa apakah durasi batas waktu telah terlampaui
         If Timer - startTime > timeout Then
             MsgBox "Time limit is reached out"
             Exit Sub
@@ -273,7 +279,7 @@ Public Sub sumPPH21()
         ' Formatting
         .Offset(-1, 0).Copy
         .PasteSpecial Paste:=xlPasteFormats
-        .Offset(0, -1).Value = "Total"
+        .Offset(0, -5).Value = "Total"
     End With
     
     Application.CutCopyMode = False
